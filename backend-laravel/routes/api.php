@@ -7,7 +7,7 @@ $router->post('/login', 'AuthController@login');
 $router->post('/register', 'AuthController@register');
 
 // Rutas protegidas con JWT
-$router->group([], function () use ($router) {
+$router->group(['middleware' => 'auth'], function () use ($router) {
 
     // Proyectos
     $router->get('/proyectos', 'ProyectoController@index');
@@ -15,7 +15,6 @@ $router->group([], function () use ($router) {
     $router->get('/proyectos/{id}', 'ProyectoController@show');
     $router->put('/proyectos/{id}', 'ProyectoController@update');
     $router->delete('/proyectos/{id}', 'ProyectoController@destroy');
-    
 
     // Unidades
     $router->get('/unidades', 'UnidadController@index');
@@ -30,4 +29,5 @@ $router->group([], function () use ($router) {
     $router->get('/clientes/{id}', 'ClienteController@show');
     $router->put('/clientes/{id}', 'ClienteController@update');
     $router->delete('/clientes/{id}', 'ClienteController@destroy');
+
 });
