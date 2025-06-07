@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ClienteController extends Controller
 {
@@ -17,23 +18,34 @@ class ClienteController extends Controller
         }
     }
 
-    public function store(Request $request)
-    {
-        try {
-            $data = $request->validate([
-                'rut' => 'required|string|unique:clientes,rut',
-                'nombre' => 'required|string',
-                'apellido' => 'required|string',
-                'correo' => 'required|email',
-                'telefono' => 'required|string',
-            ]);
+public function store(Request $request) 
+{
+    try {
+        $validator = Validator::make($request->all(), [
+            'rut' => 'required|string|unique:clients,rut',
+            'nombre' => 'required|string',
+            'apellido' => 'required|string',
+            'email' => 'required|email',
+            'telefono' => 'required|string',
+        ]);
 
-            $cliente = Cliente::create($data);
-            return response()->json($cliente, 201);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al crear el cliente.'], 500);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validación fallida.',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $cliente = Cliente::create($validator->validated());
+
+        return response()->json($cliente, 201);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error al crear el cliente.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function show($id)
     {
@@ -45,25 +57,50 @@ class ClienteController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
-    {
-        try {
-            $cliente = Cliente::findOrFail($id);
-            $cliente->update($request->all());
-            return response()->json($cliente);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al actualizar el cliente.'], 500);
-        }
-    }
 
-    public function destroy($id)
-    {
-        try {
-            $cliente = Cliente::findOrFail($id);
-            $cliente->delete();
-            return response()->json(['message' => 'Cliente eliminado.'], 204);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al eliminar el cliente.'], 500);
+public function update(Request $request, $id)
+{
+    try {
+        $cliente = Cliente::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'rut' => 'sometimes|string|unique:clients,rut,' . $id,
+            'nombre' => 'sometimes|string',
+            'apellido' => 'sometimes|string',
+            'email' => 'sometimes|email',
+            'telefono' => 'sometimes|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validación fallida.',
+                'errors' => $validator->errors()
+            ], 422);
         }
+
+        $cliente->update($validator->validated());
+
+        return response()->json([
+            'message' => 'Cliente actualizado correctamente.',
+            'cliente' => $cliente
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error al actualizar el cliente.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+ public function destroy($id)
+{
+    try {
+        $cliente = Cliente::findOrFail($id);
+        $cliente->delete();
+        return response()->json(['message' => 'Cliente eliminado correctamente.'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error al eliminar el cliente.', 'error' => $e->getMessage()], 500);
+    }
+}
+
 }

@@ -15,7 +15,7 @@ class Cliente extends Model
         'rut',
         'nombre',
         'apellido',
-        'correo',
+        'email',
         'telefono',
     ];
 
