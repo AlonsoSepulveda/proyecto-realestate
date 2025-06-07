@@ -2,6 +2,11 @@
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
+// Middleware para CORS
+$router->options('{any:.*}', function () {
+    return response('', 200);
+});
+
 // Rutas públicas
 $router->post('/login', 'AuthController@login');
 $router->post('/register', 'AuthController@register');
