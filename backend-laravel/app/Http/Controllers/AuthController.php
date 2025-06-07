@@ -16,6 +16,7 @@ class AuthController extends BaseController
 
     public function __construct()
     {
+        // <tu_token_jwt>
         $this->key = env('JWT_SECRET', 'secretpassword'); 
     }
 

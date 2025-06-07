@@ -24,7 +24,7 @@ class ProyectoInmobiliario extends Model
 
 public function unidades()
 {
-    return $this->hasMany(Unidad::class);
+    return $this->hasMany(UnidadPropiedad::class, 'proyecto_id');
 }
 
 public function cliente()
