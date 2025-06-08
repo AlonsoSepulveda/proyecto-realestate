@@ -1,25 +1,20 @@
+// src/pages/Login.jsx
 import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:8000/login', {
-        email,
-        password,
-      });
-
-      localStorage.setItem('token', res.data.token);
-      navigate('/dashboard');
+      await login(email, password);
     } catch (error) {
-      alert('Login fallido');
+      alert('Error al iniciar sesión. Por favor, verifica tus credenciales.');
+      console.error('Login error:', error);
     }
   };
 
