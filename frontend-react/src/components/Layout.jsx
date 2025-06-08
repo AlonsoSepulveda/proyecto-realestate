@@ -1,6 +1,7 @@
 // src/components/Layout.jsx
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import "../css/Layout.css";
 
 export default function Layout({ children }) {
   const { logout } = useAuth();
@@ -26,15 +27,10 @@ export default function Layout({ children }) {
               alt="Logo"
               style={{ width: "50px", height: "50px" }}
             />
-            <h1 className="text-xl font-bold text-center">
-              Proyecto Real Estate
-            </h1>
+            <h2 className="text-xl font-bold text-center">
+              Gestor comercial inmobiliario
+            </h2>
           </div>
-        </div>
-        <div className="p-4 border-t border-gray-700">
-          <button onClick={logout} className="logout-btn">
-            Cerrar sesión
-          </button>
         </div>
 
         <nav className="flex-1 p-4 space-y-2">
@@ -51,6 +47,11 @@ export default function Layout({ children }) {
               {link.label}
             </Link>
           ))}
+          <div className="p-4 border-t border-gray-700">
+            <button onClick={logout} className="logout-btn">
+              Cerrar sesión
+            </button>
+          </div>
         </nav>
       </aside>
 

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
+import SuccessModal from './SuccessModal';
 
 export default function ProjectList() {
   const [projects, setProjects] = useState([]);
+  const [success, setSuccess] = useState({ open: false, message: '' });
 
   const fetchProjects = async () => {
     try {
@@ -16,6 +18,7 @@ export default function ProjectList() {
   const deleteUnit = async (id) => {
     try {
       await api.delete(`/unidades/${id}`);
+      setSuccess({ open: true, message: 'Unidad eliminada correctamente.' });
       fetchProjects();
     } catch (error) {
       console.error("Error al eliminar Unidad:", error);
@@ -28,6 +31,11 @@ export default function ProjectList() {
 
   return (
     <div className="p-4">
+      <SuccessModal
+        open={success.open}
+        message={success.message}
+        onClose={() => setSuccess({ open: false, message: '' })}
+      />
       <h2 className="text-xl font-bold mb-4">Lista de unidades</h2>
 
       <ul className="mt-4 space-y-2">

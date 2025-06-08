@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
+import SuccessModal from './SuccessModal';
 
 export default function ProjectList() {
   const [projects, setProjects] = useState([]);
@@ -12,6 +13,7 @@ export default function ProjectList() {
     fecha_finalizacion: '',
     estado: '',
   });
+  const [success, setSuccess] = useState({ open: false, message: '' });
 
   const fetchProjects = async () => {
     try {
@@ -22,17 +24,17 @@ export default function ProjectList() {
     }
   };
 
-const deleteProject = async (id) => {
-  try {
-    await api.delete(`/proyectos/${id}`);
-    fetchProjects();
-  } catch (error) {
-    const mensaje = error.response?.data?.message || "Error desconocido al eliminar proyecto.";
-    alert(mensaje);
-    console.error("Error al eliminar proyecto:", mensaje);
-  }
-};
-
+  const deleteProject = async (id) => {
+    try {
+      await api.delete(`/proyectos/${id}`);
+      setSuccess({ open: true, message: 'Proyecto eliminado correctamente.' });
+      fetchProjects();
+    } catch (error) {
+      const mensaje = error.response?.data?.message || "Error desconocido al eliminar proyecto.";
+      alert(mensaje);
+      console.error("Error al eliminar proyecto:", mensaje);
+    }
+  };
 
   const handleEdit = (project) => {
     setEditProject(project);
@@ -57,6 +59,7 @@ const deleteProject = async (id) => {
     try {
       await api.put(`/proyectos/${editProject.id}`, formData);
       setEditProject(null);
+      setSuccess({ open: true, message: 'Proyecto editado correctamente.' });
       fetchProjects();
     } catch (error) {
       console.error("Error al actualizar proyecto:", error);
@@ -69,6 +72,11 @@ const deleteProject = async (id) => {
 
   return (
     <div className="p-4">
+      <SuccessModal
+        open={success.open}
+        message={success.message}
+        onClose={() => setSuccess({ open: false, message: '' })}
+      />
       <h2 className="text-xl font-bold mb-4">Lista de Proyectos</h2>
 
       <ul className="mt-4 space-y-2">
