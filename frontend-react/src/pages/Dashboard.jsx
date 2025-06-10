@@ -7,6 +7,7 @@ import ClientList from '../components/ClientList';
 import ClientForm from '../components/ClientForm';
 import UnitList from '../components/UnitList';
 import UnitForm from '../components/UnitForm';
+import ClientUnitForm from '../components/ClientUnitForm';
 
 const Dashboard = () => {
   return (
@@ -18,6 +19,7 @@ const Dashboard = () => {
         <Route path="/client-form" element={<ClientForm />} />
         <Route path="/units" element={<UnitList />} />
         <Route path="/unit-form" element={<UnitForm />} />
+        <Route path="/client-unit" element={<ClientUnitForm />} />
       </Routes>
     </Layout>
   );

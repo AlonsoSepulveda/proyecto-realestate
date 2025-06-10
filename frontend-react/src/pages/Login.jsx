@@ -28,21 +28,31 @@ export default function Login() {
         <div className="login-box">
           <img src="../public/logo_cotizacion.png" alt="Logo" className="login-logo" />
           <form onSubmit={handleLogin} className="login-form">
-            <h2>Iniciar Sesión</h2>
-            <input
-              type="email"
-              placeholder="Correo electrónico"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <h2>Inicio de Sesión</h2>
+            <div className="floating-label-group">
+              <input
+                type="email"
+                id="login-email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className={email ? 'has-value' : ''}
+                autoComplete="username"
+              />
+              <label htmlFor="login-email">Correo electrónico</label>
+            </div>
+            <div className="floating-label-group">
+              <input
+                type="password"
+                id="login-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className={password ? 'has-value' : ''}
+                autoComplete="current-password"
+              />
+              <label htmlFor="login-password">Contraseña</label>
+            </div>
             <button type="submit">Ingresar</button>
           </form>
         </div>

@@ -1,7 +1,7 @@
 // src/components/ProjectForm.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../api/axios";
-import SuccessModal from "./SuccessModal";
+import SuccessNotification from "./SuccessNotification";
 
 export default function ProjectForm({ onSuccess }) {
   const [form, setForm] = useState({
@@ -15,40 +15,94 @@ export default function ProjectForm({ onSuccess }) {
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState({ open: false, message: "" });
+  const [popup, setPopup] = useState({ open: false, message: "", onConfirm: null });
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      await api.post("/proyectos", form);
-      setForm({
-        nombre: "",
-        descripcion: "",
-        ubicacion: "",
-        fecha_inicio: "",
-        fecha_finalizacion: "",
-        estado: "",
-      });
-      setSuccess({ open: true, message: "Proyecto creado correctamente." });
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      console.error("Error al crear proyecto:", error);
-    } finally {
-      setLoading(false);
-    }
+    setPopup({
+      open: true,
+      message: "¿Deseas guardar este proyecto?",
+      onConfirm: async () => {
+        setPopup({ ...popup, open: false });
+        setLoading(true);
+        try {
+          await api.post("/proyectos", form);
+          setForm({
+            nombre: "",
+            descripcion: "",
+            ubicacion: "",
+            fecha_inicio: "",
+            fecha_finalizacion: "",
+            estado: "",
+          });
+          setSuccess({ open: true, message: "Proyecto creado correctamente." });
+          if (onSuccess) onSuccess();
+        } catch (error) {
+          console.error("Error al crear proyecto:", error);
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
+
+  // Renderiza el popup tipo dashboard
+  useEffect(() => {
+    if (popup.open && popup.onConfirm == null) {
+      const timer = setTimeout(() => setPopup({ ...popup, open: false }), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [popup]);
 
   return (
     <div className="project-form-wrapper">
-      <SuccessModal
+      <SuccessNotification
         open={success.open}
         message={success.message}
         onClose={() => setSuccess({ open: false, message: "" })}
       />
+      {popup.open && popup.onConfirm && (
+        <div className="success-notification-fixed">
+          <div className="success-notification-content" style={{ background: "#2563eb" }}>
+            <span className="success-notification-icon">?</span>
+            <span className="success-notification-message">{popup.message}</span>
+            <button
+              style={{
+                marginLeft: 16,
+                background: "#e5e7eb",
+                color: "#222",
+                border: "none",
+                borderRadius: 8,
+                padding: "6px 16px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+              onClick={() => setPopup({ ...popup, open: false })}
+            >
+              Cancelar
+            </button>
+            <button
+              style={{
+                marginLeft: 8,
+                background: "#22c55e",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "6px 16px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+              onClick={popup.onConfirm}
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="project-form">
         <h2>Crear Proyecto</h2>
 

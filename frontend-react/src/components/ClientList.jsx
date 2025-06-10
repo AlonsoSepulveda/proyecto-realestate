@@ -1,159 +1,227 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import SuccessModal from './SuccessModal';
+import SuccessNotification from './SuccessNotification';
 
-export default function ProjectList() {
-  const [projects, setProjects] = useState([]);
+export default function ClientList() {
+  const [clients, setClients] = useState([]);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editData, setEditData] = useState({});
   const [success, setSuccess] = useState({ open: false, message: '' });
-  const [editClient, setEditClient] = useState(null);
-  const [formData, setFormData] = useState({ rut: '', nombre: '', apellido: '', email: '', telefono: '' });
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [popup, setPopup] = useState({ open: false, message: '', onConfirm: null });
 
-  const fetchProjects = async () => {
+  const fetchClients = async (pageValue = page) => {
     try {
-      const res = await api.get('/clientes');
-      setProjects(res.data.data);
+      const params = {
+        per_page: 10,
+        page: pageValue,
+      };
+      const res = await api.get('/clientes', { params });
+      setClients(res.data.data);
+      setTotalPages(res.data.last_page || 1);
     } catch (error) {
-      console.error("Error al obtener clientes:", error);
-    }
-  };
-
-  const deleteClient = async (id) => {
-    try {
-      await api.delete(`/clientes/${id}`);
-      setSuccess({ open: true, message: 'Cliente eliminado correctamente.' });
-      fetchProjects();
-    } catch (error) {
-      console.error("Error al eliminar Cliente:", error);
-    }
-  };
-
-  const handleEdit = (client) => {
-    setEditClient(client);
-    setFormData({
-      rut: client.rut || '',
-      nombre: client.nombre || '',
-      apellido: client.apellido || '',
-      email: client.email || '',
-      telefono: client.telefono || '',
-    });
-  };
-
-  const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleUpdate = async () => {
-    try {
-      await api.put(`/clientes/${editClient.id}`, formData);
-      setEditClient(null);
-      setSuccess({ open: true, message: 'Cliente editado correctamente.' });
-      fetchProjects();
-    } catch (error) {
-      console.error('Error al actualizar cliente:', error);
+      console.error('Error al obtener clientes:', error);
     }
   };
 
   useEffect(() => {
-    fetchProjects();
-  }, []);
+    fetchClients();
+    // eslint-disable-next-line
+  }, [page]);
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  // Filtro local en la grilla para búsqueda por cualquier palabra en cualquier columna
+  const filteredClients = clients.filter((c) => {
+    const values = Object.values(c);
+    return values.some(v => v && v.toString().toLowerCase().includes(search.toLowerCase()));
+  });
+
+  // Cuando cambia el search, traer todos los clientes (sin paginación) para buscar en todas las páginas
+  useEffect(() => {
+    const fetchAllClients = async () => {
+      if (search.trim() === '') {
+        fetchClients(page); // paginado normal
+        return;
+      }
+      try {
+        // Traer todos los clientes para búsqueda global
+        const res = await api.get('/clientes', { params: { per_page: 10000 } });
+        setClients(res.data.data);
+        setTotalPages(1);
+        setPage(1);
+      } catch (error) {
+        console.error('Error al buscar clientes:', error);
+      }
+    };
+    fetchAllClients();
+    // eslint-disable-next-line
+  }, [search]);
+
+  const handleEdit = (client) => {
+    setEditRowId(client.id);
+    setEditData({ ...client });
+  };
+
+  const handleEditChange = (e) => {
+    setEditData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // GUARDAR
+  const handleEditSave = (id) => {
+    setPopup({
+      open: true,
+      message: '¿Deseas guardar los cambios de este cliente?',
+      onConfirm: async () => {
+        setPopup({ ...popup, open: false });
+        try {
+          await api.put(`/clientes/${id}`, editData);
+          setEditRowId(null);
+          setSuccess({ open: true, message: 'Cliente editado correctamente.' });
+          fetchClients();
+        } catch (error) {
+          console.error('Error al actualizar cliente:', error);
+        }
+      }
+    });
+  };
+
+  // ELIMINAR
+  const deleteClient = (id) => {
+    setPopup({
+      open: true,
+      message: '¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        setPopup({ ...popup, open: false });
+        try {
+          await api.delete(`/clientes/${id}`);
+          setSuccess({ open: true, message: 'Cliente eliminado correctamente.' });
+          fetchClients();
+        } catch (error) {
+          console.error('Error al eliminar Cliente:', error);
+        }
+      }
+    });
+  };
+
+  const handleEditCancel = () => {
+    setEditRowId(null);
+    setEditData({});
+  };
+
+  // Renderiza el popup tipo dashboard
+  useEffect(() => {
+    if (popup.open && popup.onConfirm == null) {
+      // Si es solo informativo, autocierra
+      const timer = setTimeout(() => setPopup({ ...popup, open: false }), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [popup]);
 
   return (
     <div className="p-4">
-      <SuccessModal
+      <SuccessNotification
         open={success.open}
         message={success.message}
         onClose={() => setSuccess({ open: false, message: '' })}
       />
-      <h2 className="text-xl font-bold mb-4">Lista de clientes</h2>
-
-      <ul className="mt-4 space-y-2">
-        {projects.map((p) => (
-          <li key={p.id} className="flex justify-between items-center border p-2 rounded shadow-sm">
-            <span>{p.rut}</span>&nbsp;
-            <span>{p.nombre}</span>&nbsp;
-            <span>{p.apellido}</span>
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(p)}
-                className="text-sm text-white bg-blue-600 px-2 py-1 rounded hover:bg-blue-700"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => deleteClient(p.id)}
-                className="text-sm text-white bg-red-600 px-2 py-1 rounded hover:bg-red-700"
-              >
-                Eliminar
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {/* Modal de edición */}
-      {editClient && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-xl">
-            <h3 className="text-lg font-semibold mb-4">Editar Cliente</h3>
-            <div className="space-y-3">
-              <input
-                name="rut"
-                type="text"
-                value={formData.rut}
-                onChange={handleChange}
-                placeholder="RUT"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="nombre"
-                type="text"
-                value={formData.nombre}
-                onChange={handleChange}
-                placeholder="Nombre"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="apellido"
-                type="text"
-                value={formData.apellido}
-                onChange={handleChange}
-                placeholder="Apellido"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Correo"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="telefono"
-                type="text"
-                value={formData.telefono}
-                onChange={handleChange}
-                placeholder="Teléfono"
-                className="w-full border px-3 py-2 rounded"
-              />
-            </div>
-            <div className="flex justify-end space-x-2 mt-4">
-              <button
-                onClick={() => setEditClient(null)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleUpdate}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Guardar Cambios
-              </button>
-            </div>
+      {/* Popup tipo dashboard para confirmación */}
+      {popup.open && popup.onConfirm && (
+        <div className="success-notification-fixed">
+          <div className="success-notification-content" style={{ background: '#2563eb' }}>
+            <span className="success-notification-icon">?</span>
+            <span className="success-notification-message">{popup.message}</span>
+            <button
+              style={{ marginLeft: 16, background: '#e5e7eb', color: '#222', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, cursor: 'pointer' }}
+              onClick={() => setPopup({ ...popup, open: false })}
+            >Cancelar</button>
+            <button
+              style={{ marginLeft: 8, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, cursor: 'pointer' }}
+              onClick={popup.onConfirm}
+            >Confirmar</button>
           </div>
         </div>
       )}
+      <h2 className="text-xl font-bold mb-4">Lista de Clientes</h2>
+      <div className="mb-4 flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="Buscar cliente..."
+          value={search}
+          onChange={handleSearch}
+          className="border px-3 py-2 rounded w-full max-w-xs"
+        />
+      </div>
+      <div className="overflow-x-auto" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+        <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+          <thead>
+            <tr className="bg-gray-100 border-b border-gray-300">
+              <th className="px-3 py-2 border-r border-gray-300">N°</th>
+              <th className="px-3 py-2 border-r border-gray-300">RUT</th>
+              <th className="px-3 py-2 border-r border-gray-300">Nombre</th>
+              <th className="px-3 py-2 border-r border-gray-300">Apellido</th>
+              <th className="px-3 py-2 border-r border-gray-300">Correo</th>
+              <th className="px-3 py-2 border-r border-gray-300">Teléfono</th>
+              <th className="px-3 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredClients.map((c, idx) => (
+              <tr key={c.id} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="border-r border-gray-200 px-2 py-1">{idx + 1}</td>
+                {editRowId === c.id ? (
+                  <>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="rut" value={editData.rut} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="nombre" value={editData.nombre} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="apellido" value={editData.apellido} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="email" value={editData.email} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="telefono" value={editData.telefono} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="flex gap-1 px-2 py-1">
+                      <button onClick={() => handleEditSave(c.id)} className="bg-green-600 text-white px-2 py-1 rounded">Guardar</button>
+                      <button onClick={handleEditCancel} className="bg-gray-400 text-white px-2 py-1 rounded">Cancelar</button>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="border-r border-gray-200 px-2 py-1">{c.rut}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{c.nombre}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{c.apellido}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{c.email}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{c.telefono}</td>
+                    <td className="flex gap-1 px-2 py-1">
+                      <button onClick={() => handleEdit(c)} className="bg-blue-600 text-white px-2 py-1 rounded">Editar</button>
+                      <button onClick={() => deleteClient(c.id)} className="bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Paginación */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Anterior
+        </button>
+        <span>Página {page} de {totalPages}</span>
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 }

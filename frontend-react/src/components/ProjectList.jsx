@@ -1,180 +1,238 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axios';
-import SuccessModal from './SuccessModal';
+import SuccessNotification from './SuccessNotification';
 
 export default function ProjectList() {
   const [projects, setProjects] = useState([]);
-  const [editProject, setEditProject] = useState(null);
-  const [formData, setFormData] = useState({
-    nombre: '',
-    descripcion: '',
-    ubicacion: '',
-    fecha_inicio: '',
-    fecha_finalizacion: '',
-    estado: '',
-  });
+  const [editRowId, setEditRowId] = useState(null);
+  const [editData, setEditData] = useState({});
   const [success, setSuccess] = useState({ open: false, message: '' });
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [popup, setPopup] = useState({ open: false, message: '', onConfirm: null });
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (searchValue = search, pageValue = page) => {
     try {
-      const res = await api.get('/proyectos');
+      const params = {
+        per_page: 10,
+        page: pageValue,
+        ...(searchValue ? { search: searchValue } : {}),
+      };
+      const res = await api.get('/proyectos', { params });
       setProjects(res.data.data);
+      setTotalPages(res.data.last_page || 1);
     } catch (error) {
-      console.error("Error al obtener proyectos:", error);
-    }
-  };
-
-  const deleteProject = async (id) => {
-    try {
-      await api.delete(`/proyectos/${id}`);
-      setSuccess({ open: true, message: 'Proyecto eliminado correctamente.' });
-      fetchProjects();
-    } catch (error) {
-      const mensaje = error.response?.data?.message || "Error desconocido al eliminar proyecto.";
-      alert(mensaje);
-      console.error("Error al eliminar proyecto:", mensaje);
-    }
-  };
-
-  const handleEdit = (project) => {
-    setEditProject(project);
-    setFormData({
-      nombre: project.nombre || '',
-      descripcion: project.descripcion || '',
-      ubicacion: project.ubicacion || '',
-      fecha_inicio: project.fecha_inicio || '',
-      fecha_finalizacion: project.fecha_finalizacion || '',
-      estado: project.estado || '',
-    });
-  };
-
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleUpdate = async () => {
-    try {
-      await api.put(`/proyectos/${editProject.id}`, formData);
-      setEditProject(null);
-      setSuccess({ open: true, message: 'Proyecto editado correctamente.' });
-      fetchProjects();
-    } catch (error) {
-      console.error("Error al actualizar proyecto:", error);
+      console.error('Error al obtener proyectos:', error);
     }
   };
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+    // eslint-disable-next-line
+  }, [page]);
+
+  // Cuando cambia el search, traer todos los proyectos (sin paginación) para buscar en todas las páginas
+  useEffect(() => {
+    let ignore = false;
+    const fetchAllProjects = async () => {
+      if (search.trim() === '') {
+        fetchProjects(page); // paginado normal
+        return;
+      }
+      try {
+        const res = await api.get('/proyectos', { params: { per_page: 10000 } });
+        if (!ignore) {
+          setProjects(res.data.data);
+          setTotalPages(1);
+          setPage(1);
+        }
+      } catch (error) {
+        if (!ignore) console.error('Error al buscar proyectos:', error);
+      }
+    };
+    fetchAllProjects();
+    return () => { ignore = true; };
+    // eslint-disable-next-line
+  }, [search]);
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
+  const handleEdit = (project) => {
+    setEditRowId(project.id);
+    setEditData({ ...project });
+  };
+
+  const handleEditChange = (e) => {
+    setEditData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleEditSave = (id) => {
+    setPopup({
+      open: true,
+      message: '¿Deseas guardar los cambios de este proyecto?',
+      onConfirm: async () => {
+        setPopup({ ...popup, open: false });
+        try {
+          await api.put(`/proyectos/${id}`, editData);
+          setEditRowId(null);
+          setSuccess({ open: true, message: 'Proyecto editado correctamente.' });
+          fetchProjects();
+        } catch (error) {
+          console.error('Error al actualizar proyecto:', error);
+        }
+      }
+    });
+  };
+
+  const handleEditCancel = () => {
+    setEditRowId(null);
+    setEditData({});
+  };
+
+  const deleteProject = (id) => {
+    setPopup({
+      open: true,
+      message: '¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.',
+      onConfirm: async () => {
+        setPopup({ ...popup, open: false });
+        try {
+          await api.delete(`/proyectos/${id}`);
+          setSuccess({ open: true, message: 'Proyecto eliminado correctamente.' });
+          fetchProjects();
+        } catch (error) {
+          const mensaje = error.response?.data?.message || 'Error desconocido al eliminar proyecto.';
+          alert(mensaje);
+          console.error('Error al eliminar proyecto:', mensaje);
+        }
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (popup.open && popup.onConfirm == null) {
+      const timer = setTimeout(() => setPopup({ ...popup, open: false }), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [popup]);
+
+  // Filtro local en la grilla para búsqueda por cualquier palabra en cualquier columna
+  const filteredProjects = projects.filter((p) => {
+    const values = Object.values(p);
+    return values.some(v => v && v.toString().toLowerCase().includes(search.toLowerCase()));
+  });
 
   return (
     <div className="p-4">
-      <SuccessModal
+      <SuccessNotification
         open={success.open}
         message={success.message}
         onClose={() => setSuccess({ open: false, message: '' })}
       />
-      <h2 className="text-xl font-bold mb-4">Lista de Proyectos</h2>
-
-      <ul className="mt-4 space-y-2">
-        {projects.map((p) => (
-          <li key={p.id} className="flex justify-between items-center border p-2 rounded shadow-sm">
-            <span>{p.nombre}</span>
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEdit(p)}
-                className="text-sm text-white bg-blue-600 px-2 py-1 rounded hover:bg-blue-700"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => deleteProject(p.id)}
-                className="text-sm text-white bg-red-600 px-2 py-1 rounded hover:bg-red-700"
-              >
-                Eliminar
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {/* Modal de edición */}
-      {editProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-xl">
-            <h3 className="text-lg font-semibold mb-4">Editar Proyecto</h3>
-
-            <div className="space-y-3">
-              <input
-                name="nombre"
-                type="text"
-                value={formData.nombre}
-                onChange={handleChange}
-                placeholder="Nombre"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <textarea
-                name="descripcion"
-                value={formData.descripcion}
-                onChange={handleChange}
-                placeholder="Descripción"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="ubicacion"
-                type="text"
-                value={formData.ubicacion}
-                onChange={handleChange}
-                placeholder="Ubicación"
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="fecha_inicio"
-                type="date"
-                value={formData.fecha_inicio}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
-              />
-              <input
-                name="fecha_finalizacion"
-                type="date"
-                value={formData.fecha_finalizacion}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
-              />
-              <select
-                name="estado"
-                value={formData.estado}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
-              >
-                <option value="">Seleccionar estado</option>
-                <option value="En planificación">En planificación</option>
-                <option value="En construcción">En construcción</option>
-                <option value="Finalizado">Finalizado</option>
-              </select>
-            </div>
-
-            <div className="flex justify-end space-x-2 mt-4">
-              <button
-                onClick={() => setEditProject(null)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleUpdate}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Guardar Cambios
-              </button>
-            </div>
+      {popup.open && popup.onConfirm && (
+        <div className="success-notification-fixed">
+          <div className="success-notification-content" style={{ background: '#2563eb' }}>
+            <span className="success-notification-icon">?</span>
+            <span className="success-notification-message">{popup.message}</span>
+            <button
+              style={{ marginLeft: 16, background: '#e5e7eb', color: '#222', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, cursor: 'pointer' }}
+              onClick={() => setPopup({ ...popup, open: false })}
+            >Cancelar</button>
+            <button
+              style={{ marginLeft: 8, background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600, cursor: 'pointer' }}
+              onClick={popup.onConfirm}
+            >Confirmar</button>
           </div>
         </div>
       )}
+      <h2 className="text-xl font-bold mb-4">Lista de Proyectos</h2>
+      <div className="mb-4 flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="Buscar proyecto..."
+          value={search}
+          onChange={handleSearch}
+          className="border px-3 py-2 rounded w-full max-w-xs"
+        />
+      </div>
+      <div className="overflow-x-auto" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+        <table className="min-w-full bg-white border border-gray-300 rounded shadow">
+          <thead>
+            <tr className="bg-gray-100 border-b border-gray-300">
+              <th className="px-3 py-2 border-r border-red-300">N°</th>
+              <th className="px-3 py-2 border-r border-red-300">Nombre</th>
+              <th className="px-3 py-2 border-r border-red-300">Descripción</th>
+              <th className="px-3 py-2 border-r border-red-300">Ubicación</th>
+              <th className="px-3 py-2 border-r border-red-300">Fecha Inicio</th>
+              <th className="px-3 py-2 border-r border-red-300">Fecha Finalización</th>
+              <th className="px-3 py-2 border-r border-red-300">Estado</th>
+              <th className="px-3 py-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredProjects.map((p, idx) => (
+              <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-50">
+                <td className="border-r border-gray-200 px-2 py-1">{idx + 1}</td>
+                {editRowId === p.id ? (
+                  <>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="nombre" value={editData.nombre} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="descripcion" value={editData.descripcion} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="ubicacion" value={editData.ubicacion} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="fecha_inicio" type="date" value={editData.fecha_inicio} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1"><input name="fecha_finalizacion" type="date" value={editData.fecha_finalizacion} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
+                    <td className="border-r border-gray-200 px-2 py-1">
+                      <select name="estado" value={editData.estado} onChange={handleEditChange} className="w-full border rounded px-2 py-1">
+                        <option value="">Seleccionar estado</option>
+                        <option value="En planificación">En planificación</option>
+                        <option value="En construcción">En construcción</option>
+                        <option value="Finalizado">Finalizado</option>
+                      </select>
+                    </td>
+                    <td className="flex gap-1 px-2 py-1">
+                      <button onClick={() => handleEditSave(p.id)} className="bg-green-600 text-white px-2 py-1 rounded">Guardar</button>
+                      <button onClick={handleEditCancel} className="bg-gray-400 text-white px-2 py-1 rounded">Cancelar</button>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="border-r border-gray-200 px-2 py-1">{p.nombre}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{p.descripcion}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{p.ubicacion}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{p.fecha_inicio}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{p.fecha_finalizacion}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{p.estado}</td>
+                    <td className="flex gap-1 px-2 py-1">
+                      <button onClick={() => handleEdit(p)} className="bg-blue-600 text-white px-2 py-1 rounded">Editar</button>
+                      <button onClick={() => deleteProject(p.id)} className="bg-red-600 text-white px-2 py-1 rounded">Eliminar</button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Paginación */}
+      <div className="flex justify-center items-center gap-2 mt-4">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Anterior
+        </button>
+        <span>Página {page} de {totalPages}</span>
+        <button
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+          className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 }

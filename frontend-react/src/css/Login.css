@@ -102,6 +102,43 @@
   background-color: #870909;
 }
 
+/* Estilos para labels flotantes en los inputs de login */
+.floating-label-group {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.floating-label-group input {
+  width: 100%;
+  padding: 12px 12px 12px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  background: none;
+  outline: none;
+}
+
+.floating-label-group label {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  color: #888;
+  font-size: 16px;
+  pointer-events: none;
+  background: #fff;
+  transition: 0.2s ease all;
+  padding: 0 4px;
+}
+
+.floating-label-group input:focus + label,
+.floating-label-group input.has-value + label {
+  top: -10px;
+  left: 8px;
+  font-size: 13px;
+  color: #a90d0d;
+  background: #fff;
+}
+
 /* Responsive: apilar imagen y login verticalmente */
 @media (max-width: 768px) {
   .login-wrapper {
