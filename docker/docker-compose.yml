@@ -1,0 +1,57 @@
+# Docker Compose configuration for Real Estate App
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend-laravel
+    container_name: backend-laravel
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend-laravel:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:SomeRandomString
+      - DB_CONNECTION=pgsql
+      - DB_HOST=127.0.0.1
+      - DB_PORT=5432
+      - DB_DATABASE=realestate
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=superpassword
+    depends_on:
+      - db
+    command: php -S 0.0.0.0:8000 -t public
+
+  db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_DB: realestate
+      POSTGRES_USER: realestate
+      POSTGRES_PASSWORD: realestate
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: ../frontend-react
+    container_name: frontend-react
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend-react:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    command: npm run dev -- --host
+
+volumes:
+  db_data:

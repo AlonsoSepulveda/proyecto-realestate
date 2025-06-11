@@ -1,0 +1,9 @@
+# .dockerignore for Laravel Backend
+/vendor
+/node_modules
+/storage/*.key
+.env
+.idea
+*.log
+*.sqlite
+/public/storage

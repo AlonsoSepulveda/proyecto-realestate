@@ -16,6 +16,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Register from './pages/Register';
 import PrivateRoute from './routes/PrivateRoute';
 
 export default function Router() {
@@ -23,6 +24,7 @@ export default function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/dashboard"
           element={

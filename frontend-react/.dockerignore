@@ -1,0 +1,6 @@
+# .dockerignore for React Frontend
+node_modules
+dist
+.env
+.idea
+*.log
