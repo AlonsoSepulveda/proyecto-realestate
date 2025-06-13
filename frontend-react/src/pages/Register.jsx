@@ -26,7 +26,6 @@ export default function Register() {
         name: nombre,
         email,
         password,
-        password_confirmation: repeatPassword
       });
       setSuccess('¡Registro exitoso!');
       setNombre('');

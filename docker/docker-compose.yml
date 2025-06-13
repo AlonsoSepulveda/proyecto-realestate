@@ -31,8 +31,8 @@ services:
     restart: always
     environment:
       POSTGRES_DB: realestate
-      POSTGRES_USER: realestate
-      POSTGRES_PASSWORD: realestate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: superpassword
     ports:
       - "5432:5432"
     volumes:
