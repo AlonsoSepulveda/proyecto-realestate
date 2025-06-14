@@ -1,7 +1,7 @@
-# Dockerfile for Laravel Backend
+# Dockerfile para el backend de Laravel
 FROM php:8.2-fpm
 
-# Install system dependencies
+# Instala dependencias del sistema
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
@@ -13,19 +13,19 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Install Composer
+# Instala Composer
 COPY --from=composer:2.5 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Establece el directorio de trabajo
 WORKDIR /var/www/html
 
-# Copy existing application directory contents
+# Copia el contenido de la aplicación
 COPY . /var/www/html
 
-# Install PHP dependencies
+# Instala dependencias de PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Set permissions
+# Establece permisos
 RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 

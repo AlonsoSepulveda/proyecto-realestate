@@ -72,7 +72,7 @@ https://documenter.getpostman.com/view/45554155/2sB2x6kXL9
    cd backend-laravel
    composer install
    php artisan migrate --seed
-   php -S 127.0.0.1:8000 -t public
+   php -S localhost:8000 -t public
    ```
 
 ### Frontend

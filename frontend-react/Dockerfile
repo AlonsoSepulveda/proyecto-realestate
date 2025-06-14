@@ -1,4 +1,4 @@
-# Dockerfile for React Frontend
+# Dockerfile para el frontend con React
 FROM node:20-alpine
 
 WORKDIR /app
