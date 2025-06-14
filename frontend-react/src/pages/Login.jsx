@@ -34,6 +34,7 @@ export default function Login() {
               <input
                 type="email"
                 id="login-email"
+                name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -46,6 +47,7 @@ export default function Login() {
               <input
                 type={showPassword ? "text" : "password"}
                 id="login-password"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
