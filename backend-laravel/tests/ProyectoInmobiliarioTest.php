@@ -10,7 +10,7 @@ class ProyectoInmobiliarioTest extends TestCase
     public function puede_crear_un_proyecto()
     {
         $proyecto = ProyectoInmobiliario::create([
-            'nombre' => 'Proyecto Test',
+            'nombre' => 'Proyecto Test 3',
             'descripcion' => 'Descripción de prueba',
             'ubicacion' => 'Ciudad Test',
             'fecha_inicio' => '2025-06-10',
@@ -19,6 +19,6 @@ class ProyectoInmobiliarioTest extends TestCase
         ]);
 
         $this->assertNotNull($proyecto->id);
-        $this->assertEquals('Proyecto Test', $proyecto->nombre);
+        $this->assertEquals('Proyecto Test 3', $proyecto->nombre);
     }
 }
