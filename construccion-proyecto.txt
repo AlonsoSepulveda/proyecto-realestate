@@ -1,46 +1,44 @@
-# Construcción del Proyecto Real Estate
+Construcción del Proyecto Real Estate
 
-## 1. Inicialización y Estructura
-- Se creó un repositorio con dos carpetas principales: `backend-laravel` (API en Laravel Lumen) y `frontend-react` (SPA en React + Vite).
-- Se agregó un archivo `docker-compose.yml` para orquestar los servicios de backend, frontend y base de datos PostgreSQL.
+1. Inicialización y Estructura
+Se creó un repositorio con dos carpetas principales: backend-laravel (API en Laravel Lumen) y frontend-react (SPA en React + Vite).
+Se agregó un archivo docker-compose.yml para orquestar los servicios de backend, frontend y base de datos PostgreSQL.
 
-## 2. Backend (Laravel Lumen)
-- Se inicializó un proyecto Lumen y se configuró para usar PostgreSQL.
-- Se crearon migraciones para las tablas principales: `users`, `clients`, `projects`, `units`.
-- Se implementaron modelos Eloquent para cada entidad.
-- Se desarrollaron controladores RESTful para manejar operaciones CRUD de proyectos, clientes y unidades.
-- Se implementó autenticación JWT (registro y login de usuarios).
-- Se agregaron pruebas unitarias y HTTP para asegurar la funcionalidad.
-- Se dockerizó el backend con un Dockerfile optimizado para producción y desarrollo.
+2. Backend (Laravel Lumen)
+Se inicializó un proyecto Lumen y se configuró para usar PostgreSQL.
+Se crearon migraciones para las tablas principales: users, clients, projects, units.
+Se implementaron modelos Eloquent para cada entidad.
+Se desarrollaron controladores RESTful para manejar operaciones CRUD de proyectos, clientes y unidades.
+Se implementó autenticación JWT (registro y login de usuarios).
+Se agregaron pruebas unitarias y HTTP para asegurar la funcionalidad.
+Se dockerizó el backend con un Dockerfile optimizado para producción y desarrollo.
 
-## 3. Frontend (React + Vite)
-- Se creó la estructura base con Vite y React.
-- Se implementó el sistema de rutas con React Router.
-- Se desarrollaron páginas y componentes para login, registro, dashboard, gestión de proyectos, clientes y unidades.
-- Se integró Axios para consumir la API del backend.
-- Se implementó un contexto de autenticación para manejar el token JWT y proteger rutas.
-- Se mejoró la UI/UX con formularios validados, feedback visual y diseño responsivo.
-- Se dockerizó el frontend para facilitar el despliegue y desarrollo.
+3. Frontend (React + Vite)
+Se creó la estructura base con Vite y React.
+Se implementó el sistema de rutas con React Router.
+Se desarrollaron páginas y componentes para login, registro, dashboard, gestión de proyectos, clientes y unidades.
+Se integró Axios para consumir la API del backend.
+Se implementó un contexto de autenticación para manejar el token JWT y proteger rutas.
+Se mejoró la UI/UX con formularios validados, feedback visual y diseño responsivo.
+Se dockerizó el frontend para facilitar el despliegue y desarrollo.
 
-## 4. Base de Datos (PostgreSQL)
-- Se utilizó la imagen oficial de PostgreSQL en Docker.
-- Se configuró el volumen de datos y la variable `PGDATA` para evitar problemas de inicialización.
-- Las migraciones de Laravel crearon y actualizaron la estructura de la base de datos automáticamente.
+4. Base de Datos (PostgreSQL)
+Se utilizó la imagen oficial de PostgreSQL en Docker.
+Se configuró el volumen de datos y la variable PGDATA para evitar problemas de inicialización.
+Las migraciones de Laravel crearon y actualizaron la estructura de la base de datos automáticamente.
 
-## 5. Pruebas y Calidad
-- Se escribieron pruebas unitarias para modelos y endpoints en el backend.
-- Se agregaron pruebas funcionales end-to-end con Selenium WebDriver en el frontend.
-- Se documentó el flujo de pruebas y cómo ejecutarlas.
+5. Pruebas y Calidad
+Se escribieron pruebas unitarias para modelos y endpoints en el backend.
+Se agregaron pruebas funcionales end-to-end con Selenium WebDriver en el frontend.
+Se documentó el flujo de pruebas y cómo ejecutarlas.
 
-## 6. Documentación
-- Se generó documentación detallada en los archivos `README.md` de cada subproyecto y en la raíz.
-- Se explicó la lógica, la arquitectura y los comandos principales para desarrollo y despliegue.
+6. Documentación
+Se generó documentación detallada en los archivos README.md de cada subproyecto y en la raíz.
+Se explicó la lógica, la arquitectura y los comandos principales para desarrollo y despliegue.
 
-## 7. Buenas Prácticas
-- Separación clara entre frontend y backend.
-- Uso de variables de entorno para configuración.
-- Dockerización para portabilidad y reproducibilidad.
-- Pruebas automatizadas para asegurar calidad.
-- Código y documentación en español para facilitar el mantenimiento.
-
----
+7. Buenas Prácticas
+Separación clara entre frontend y backend.
+Uso de variables de entorno para configuración.
+Dockerización para portabilidad y reproducibilidad.
+Pruebas automatizadas para asegurar calidad.
+Código y documentación en español para facilitar el mantenimiento.

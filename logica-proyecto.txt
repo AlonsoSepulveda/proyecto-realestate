@@ -1,50 +1,48 @@
-# Lógica del Proyecto Real Estate: Backend y Frontend
+Lógica del Proyecto Real Estate: Backend y Frontend
 
-## 1. Backend (Laravel Lumen)
-- **Propósito:** Proveer una API RESTful para gestionar proyectos inmobiliarios, clientes, unidades y usuarios.
-- **Estructura:**
-  - Modelos: `User`, `Cliente`, `ProyectoInmobiliario`, `UnidadPropiedad`.
-  - Controladores: Manejan las rutas y lógica de negocio (crear, listar, actualizar, eliminar).
-  - Rutas: Definidas en `routes/api.php`, protegidas por JWT salvo login/registro.
-  - Autenticación: JWT (login y registro de usuarios, protección de endpoints).
-  - Base de datos: PostgreSQL, migraciones para crear tablas y relaciones.
-  - Pruebas: Unitarias y HTTP para asegurar la funcionalidad de los endpoints.
+1. Backend (Laravel Lumen)
+Propósito: Proveer una API RESTful para gestionar proyectos inmobiliarios, clientes, unidades y usuarios.
+Estructura:
+- Modelos: User, Cliente, ProyectoInmobiliario, UnidadPropiedad.
+- Controladores: Manejan las rutas y lógica de negocio (crear, listar, actualizar, eliminar).
+- Rutas: Definidas en routes/api.php, protegidas por JWT salvo login/registro.
+- Autenticación: JWT (login y registro de usuarios, protección de endpoints).
+- Base de datos: PostgreSQL, migraciones para crear tablas y relaciones.
+- Pruebas: Unitarias y HTTP para asegurar la funcionalidad de los endpoints.
 
-## 2. Frontend (React + Vite)
-- **Propósito:** SPA que consume la API del backend y permite a los usuarios interactuar con el sistema de forma visual.
-- **Estructura:**
-  - Páginas: Login, Register, Dashboard, Listados y Formularios de Proyectos, Clientes y Unidades.
-  - Componentes: Reutilizables para formularios, listas, layout, etc.
-  - Autenticación: Contexto de React para manejar el login, registro y almacenamiento del token JWT.
-  - Comunicación: Axios para hacer peticiones HTTP a la API del backend.
-  - Navegación: React Router para rutas protegidas y públicas.
-  - Pruebas: Selenium WebDriver para pruebas end-to-end del flujo de usuario.
+2. Frontend (React + Vite)
+Propósito: SPA que consume la API del backend y permite a los usuarios interactuar con el sistema de forma visual.
+Estructura:
+- Páginas: Login, Register, Dashboard, Listados y Formularios de Proyectos, Clientes y Unidades.
+- Componentes: Reutilizables para formularios, listas, layout, etc.
+- Autenticación: Contexto de React para manejar el login, registro y almacenamiento del token JWT.
+- Comunicación: Axios para hacer peticiones HTTP a la API del backend.
+- Navegación: React Router para rutas protegidas y públicas.
+- Pruebas: Selenium WebDriver para pruebas end-to-end del flujo de usuario.
 
-## 3. Flujo General
-1. **Registro/Login:**
-   - El usuario se registra o inicia sesión desde el frontend.
-   - El frontend envía los datos al backend (`/register` o `/login`).
-   - El backend valida, crea el usuario y responde con un token JWT.
-   - El frontend almacena el token y lo usa para futuras peticiones.
+3. Flujo General
+Registro/Login:
+El usuario se registra o inicia sesión desde el frontend.
+El frontend envía los datos al backend (/register o /login).
+El backend valida, crea el usuario y responde con un token JWT.
+El frontend almacena el token y lo usa para futuras peticiones.
 
-2. **Gestión de Proyectos, Clientes y Unidades:**
-   - El usuario autenticado accede al dashboard.
-   - Puede crear, listar, editar o eliminar proyectos, clientes y unidades.
-   - Cada acción en el frontend dispara una petición HTTP al backend.
-   - El backend procesa la petición, interactúa con la base de datos y responde con los datos actualizados.
+Gestión de Proyectos, Clientes y Unidades:
+El usuario autenticado accede al dashboard.
+Puede crear, listar, editar o eliminar proyectos, clientes y unidades.
+Cada acción en el frontend dispara una petición HTTP al backend.
+El backend procesa la petición, interactúa con la base de datos y responde con los datos actualizados.
 
-3. **Protección de rutas:**
-   - El backend protege los endpoints con middleware JWT.
-   - El frontend protege rutas usando el contexto de autenticación.
+Protección de rutas:
+El backend protege los endpoints con middleware JWT.
+El frontend protege rutas usando el contexto de autenticación.
 
-4. **Persistencia:**
-   - Todos los datos se almacenan en PostgreSQL.
-   - Los cambios se reflejan en tiempo real en el frontend tras cada operación exitosa.
+Persistencia:
+Todos los datos se almacenan en PostgreSQL.
+Los cambios se reflejan en tiempo real en el frontend tras cada operación exitosa.
 
-## 4. Docker
-- **Orquestación:** Docker Compose levanta los servicios de backend, frontend y base de datos.
-- **Ventajas:** Aislamiento, portabilidad y facilidad de despliegue.
-
----
+4. Docker
+Orquestación: Docker Compose levanta los servicios de backend, frontend y base de datos.
+Ventajas: Aislamiento, portabilidad y facilidad de despliegue.
 
 Este flujo asegura una arquitectura desacoplada, segura y fácil de mantener, donde el frontend y backend pueden evolucionar de forma independiente y escalar según sea necesario.
