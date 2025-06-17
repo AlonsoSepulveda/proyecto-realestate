@@ -11,6 +11,7 @@ export default function ProjectList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [popup, setPopup] = useState({ open: false, message: '', onConfirm: null });
+  const [allProjects, setAllProjects] = useState([]);
 
   const fetchProjects = async (searchValue = search, pageValue = page) => {
     try {
@@ -56,6 +57,35 @@ export default function ProjectList() {
     // eslint-disable-next-line
   }, [search]);
 
+  // Cargar todos los proyectos una sola vez
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const res = await api.get('/proyectos', { params: { per_page: 10000 } });
+        setAllProjects(res.data.data);
+      } catch (error) {
+        setAllProjects([]);
+      }
+    };
+    fetchAll();
+  }, []);
+
+  // Filtrar sobre todos los proyectos
+  const filteredProjects = allProjects.filter((p) => {
+    const values = Object.values(p);
+    return values.some(v => v && v.toString().toLowerCase().includes(search.toLowerCase()));
+  });
+
+  // Paginación sobre los filtrados
+  const perPage = 10;
+  const paginatedProjects = filteredProjects.slice((page - 1) * perPage, page * perPage);
+  const totalPagesFiltered = Math.ceil(filteredProjects.length / perPage) || 1;
+
+  useEffect(() => {
+    setTotalPages(totalPagesFiltered);
+    if (page > totalPagesFiltered) setPage(1);
+  }, [filteredProjects, totalPagesFiltered]);
+
   const handleSearch = (e) => {
     setSearch(e.target.value);
     setPage(1);
@@ -70,6 +100,16 @@ export default function ProjectList() {
     setEditData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // Recargar todos los proyectos después de editar o eliminar
+  const reloadAllProjects = async () => {
+    try {
+      const res = await api.get('/proyectos', { params: { per_page: 10000 } });
+      setAllProjects(res.data.data);
+    } catch (error) {
+      setAllProjects([]);
+    }
+  };
+
   const handleEditSave = (id) => {
     setPopup({
       open: true,
@@ -80,7 +120,7 @@ export default function ProjectList() {
           await api.put(`/proyectos/${id}`, editData);
           setEditRowId(null);
           setSuccess({ open: true, message: 'Proyecto editado correctamente.' });
-          fetchProjects();
+          reloadAllProjects();
         } catch (error) {
           console.error('Error al actualizar proyecto:', error);
         }
@@ -102,7 +142,7 @@ export default function ProjectList() {
         try {
           await api.delete(`/proyectos/${id}`);
           setSuccess({ open: true, message: 'Proyecto eliminado correctamente.' });
-          fetchProjects();
+          reloadAllProjects();
         } catch (error) {
           const mensaje = error.response?.data?.message || 'Error desconocido al eliminar proyecto.';
           alert(mensaje);
@@ -118,12 +158,6 @@ export default function ProjectList() {
       return () => clearTimeout(timer);
     }
   }, [popup]);
-
-  // Filtro local en la grilla para búsqueda por cualquier palabra en cualquier columna
-  const filteredProjects = projects.filter((p) => {
-    const values = Object.values(p);
-    return values.some(v => v && v.toString().toLowerCase().includes(search.toLowerCase()));
-  });
 
   return (
     <div className="p-4">
@@ -173,9 +207,9 @@ export default function ProjectList() {
             </tr>
           </thead>
           <tbody>
-            {filteredProjects.map((p, idx) => (
+            {paginatedProjects.map((p, idx) => (
               <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="border-r border-gray-200 px-2 py-1">{idx + 1}</td>
+                <td className="border-r border-gray-200 px-2 py-1">{(page - 1) * perPage + idx + 1}</td>
                 {editRowId === p.id ? (
                   <>
                     <td className="border-r border-gray-200 px-2 py-1"><input name="nombre" value={editData.nombre} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>

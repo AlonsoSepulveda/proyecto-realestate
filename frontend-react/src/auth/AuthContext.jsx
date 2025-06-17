@@ -10,39 +10,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const initializeAuth = async () => {
-  //     const savedToken = localStorage.getItem("token");
-  //     if (!savedToken) return;
-
-  //     setToken(savedToken);
-
-  //     try {
-  //       await fetchUser(); // si falla, hace logout
-  //     } catch (error) {
-  //       console.error("Fallo al cargar usuario en inicio:", error);
-  //     }
-  //   };
-
-  //   initializeAuth(); // solo una vez
-  // }, []);
-
-  // const fetchUser = async () => {
-  //   try {
-  //     const res = await api.get("/me");
-  //     setUser(res.data);
-  //   } catch (error) {
-  //     const status = error.response?.status;
-
-  //     if (status === 401 || status === 403) {
-  //       console.warn("Token inválido o expirado. Cerrando sesión...");
-  //       logout();
-  //     } else {
-  //       console.error("Error inesperado al obtener usuario:", error);
-  //     }
-  //   }
-  // };
-
   const login = async (email, password) => {
     try {
       const response = await api.post("/login", { email, password });

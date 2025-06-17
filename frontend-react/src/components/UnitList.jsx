@@ -141,6 +141,7 @@ export default function UnitList() {
             <tr className="bg-gray-100 border-b border-gray-300">
               <th className="px-3 py-2 border-r border-gray-300">N°</th>
               <th className="px-3 py-2 border-r border-gray-300">N° Unidad</th>
+              <th className="px-3 py-2 border-r border-gray-300">Proyecto</th>
               <th className="px-3 py-2 border-r border-gray-300">Tipo</th>
               <th className="px-3 py-2 border-r border-gray-300">Metraje (m²)</th>
               <th className="px-3 py-2 border-r border-gray-300">Precio Venta</th>
@@ -155,6 +156,7 @@ export default function UnitList() {
                 {editRowId === u.id ? (
                   <>
                     <td className="border-r border-gray-200 px-2 py-1">{u.numero_unidad}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{u.proyecto?.nombre || u.proyecto_id}</td>
                     <td className="border-r border-gray-200 px-2 py-1"><input name="tipo_unidad" value={editData.tipo_unidad} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
                     <td className="border-r border-gray-200 px-2 py-1"><input name="metraje_cuadrado" type="number" min="0" step="0.01" value={editData.metraje_cuadrado} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
                     <td className="border-r border-gray-200 px-2 py-1"><input name="precio_venta" type="number" min="0" step="0.01" value={editData.precio_venta} onChange={handleEditChange} className="w-full border rounded px-2 py-1" /></td>
@@ -174,6 +176,7 @@ export default function UnitList() {
                 ) : (
                   <>
                     <td className="border-r border-gray-200 px-2 py-1">{u.numero_unidad}</td>
+                    <td className="border-r border-gray-200 px-2 py-1">{u.proyecto?.nombre || u.proyecto_id}</td>
                     <td className="border-r border-gray-200 px-2 py-1">{u.tipo_unidad}</td>
                     <td className="border-r border-gray-200 px-2 py-1">{u.metraje_cuadrado}</td>
                     <td className="border-r border-gray-200 px-2 py-1">{u.precio_venta}</td>
