@@ -192,7 +192,7 @@ export default function UnitList() {
           </tbody>
         </table>
       </div>
-      {/* Paginación */}
+      {/* Paginación comentario */}
       <div className="flex justify-center items-center gap-2 mt-4">
         <button
           onClick={() => setPage((p) => Math.max(1, p - 1))}

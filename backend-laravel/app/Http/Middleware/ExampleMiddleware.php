@@ -7,7 +7,7 @@ use Closure;
 class ExampleMiddleware
 {
     /**
-     * Handle an incoming request.
+     * Handle an incoming request comentario.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
