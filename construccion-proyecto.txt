@@ -36,7 +36,7 @@ Se documentó el flujo de pruebas y cómo ejecutarlas.
 Se generó documentación detallada en los archivos README.md de cada subproyecto y en la raíz.
 Se explicó la lógica, la arquitectura y los comandos principales para desarrollo y despliegue.
 
-7. Buenas Prácticas
+7. Buenas Prácticas.
 Separación clara entre frontend y backend.
 Uso de variables de entorno para configuración.
 Dockerización para portabilidad y reproducibilidad.
